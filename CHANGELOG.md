@@ -1,5 +1,22 @@
 # Catatan versi Kantor AI
 
+## 1.6.3
+- Ruang rapat: layar tidak lagi ketarik ke bawah saat agent membalas. Muncul tombol "↓ N pesan baru" untuk lompat ke pesan terakhir kalau mau.
+
+## 1.6.2
+- Tombol tutup/buka menu di pojok kiri atas: sidebar bisa diciutkan jadi ikon saja (pilihan diingat browser).
+- Tiap fitur punya identitas warna sendiri sesuai ikonnya (latar cahaya, tombol, kartu, garis header, fokus input).
+- Halaman Model AI, Telegram, Tim & tugas, Ruang rapat punya banner pembuka baru.
+
+## 1.6.1
+- Ikon premium: tiap menu sidebar punya ubin gradien menyala dengan warna sendiri (gaya app-icon), membesar saat disorot.
+- Kartu angka dashboard baru: angka besar bergradien, ikon di ubin gradien, cahaya warna di sudut.
+- Judul seksi bergaris neon, label sidebar bergradien, kartu & header kaca.
+
+## 1.6.0
+- Tampilan baru "Neon modern": latar gelap pekat dengan cahaya ungu, sidebar kaca, menu aktif menyala, kartu kaca dengan glow, tombol gradien neon, input & tabel lebih rapi, judul halaman kantor bergradien, font Plus Jakarta Sans.
+- Menu "Keahlian" di halaman agent disembunyikan.
+
 ## 1.5.5
 - Menu "Keahlian" di halaman agent disembunyikan.
 
