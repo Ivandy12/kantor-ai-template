@@ -1,0 +1,1 @@
+{"name":"kantor-proxy","private":true,"dependencies":{"http-proxy":"^1.18.1"}}

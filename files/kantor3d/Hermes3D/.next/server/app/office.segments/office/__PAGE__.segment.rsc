@@ -1,0 +1,8 @@
+1:"$Sreact.fragment"
+2:I[54109,["/kantor3d/_next/static/chunks/0889c5acb4a56bb1.js","/kantor3d/_next/static/chunks/29692bd74dff8169.js","/kantor3d/_next/static/chunks/7e3a3074c8637c4e.js"],"AgentStoreProvider"]
+3:"$Sreact.suspense"
+4:I[82521,["/kantor3d/_next/static/chunks/0889c5acb4a56bb1.js","/kantor3d/_next/static/chunks/29692bd74dff8169.js","/kantor3d/_next/static/chunks/7e3a3074c8637c4e.js"],"RunningAvatarLoader"]
+5:I[30833,["/kantor3d/_next/static/chunks/0889c5acb4a56bb1.js","/kantor3d/_next/static/chunks/29692bd74dff8169.js","/kantor3d/_next/static/chunks/7e3a3074c8637c4e.js"],"OfficeScreen"]
+6:I[97367,["/kantor3d/_next/static/chunks/ff1a16fafef87110.js","/kantor3d/_next/static/chunks/0bd6498bda341889.js"],"OutletBoundary"]
+0:{"buildId":"Bpf0i2rpk4vaVZYyujzxO","rsc":["$","$1","c",{"children":[["$","$L2",null,{"children":["$","$3",null,{"fallback":["$","div",null,{"className":"flex h-full w-full items-center justify-center bg-background","aria-label":"Loading office","role":"status","children":["$","div",null,{"className":"flex flex-col items-center gap-3","children":["$","$L4",null,{"size":28,"trackWidth":76,"label":"Loading...","labelClassName":"text-muted-foreground"}]}]}],"children":["$","$L5",null,{"showHermesConsole":true}]}]}],[["$","script","script-0",{"src":"/kantor3d/_next/static/chunks/0889c5acb4a56bb1.js","async":true}],["$","script","script-1",{"src":"/kantor3d/_next/static/chunks/29692bd74dff8169.js","async":true}],["$","script","script-2",{"src":"/kantor3d/_next/static/chunks/7e3a3074c8637c4e.js","async":true}]],["$","$L6",null,{"children":["$","$3",null,{"name":"Next.MetadataOutlet","children":"$@7"}]}]]}],"loading":null,"isPartial":false}
+7:null

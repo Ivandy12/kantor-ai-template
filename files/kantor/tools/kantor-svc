@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# kantor-svc — penjaga service Kantor AI tanpa s6 (dipakai kalau /run/service tidak bisa ditulis).
+#   kantor-svc start [nama|all]   nyalakan (aman diulang, yang sudah jalan dilewati)
+#   kantor-svc stop  [nama|all]
+#   kantor-svc status
+# Tiap service jalan dalam loop: kalau prosesnya mati, otomatis dinyalakan lagi 3 detik kemudian.
+SVC=/opt/data/services
+PIDD=/opt/data/kantor/run
+ALL="paperclip kantor-proxy kantor-adapter kantor-web kantor-telegram"
+mkdir -p "$PIDD"
+
+alive() { [ -f "$PIDD/$1.pid" ] && kill -0 "$(cat "$PIDD/$1.pid")" 2>/dev/null; }
+
+start() {
+  [ -x "$SVC/$1/run" ] || return 0
+  alive "$1" && return 0
+  setsid nohup bash -c "while true; do '$SVC/$1/run'; sleep 3; done" >/dev/null 2>&1 </dev/null &
+  echo $! > "$PIDD/$1.pid"
+  echo "[kantor-svc] start $1"
+}
+
+stop() {
+  alive "$1" || { rm -f "$PIDD/$1.pid"; return 0; }
+  kill -TERM -- "-$(cat "$PIDD/$1.pid")" 2>/dev/null || kill -TERM "$(cat "$PIDD/$1.pid")" 2>/dev/null
+  rm -f "$PIDD/$1.pid"
+  echo "[kantor-svc] stop $1"
+}
+
+cmd="${1:-status}"; target="${2:-all}"
+[ "$target" = all ] && list="$ALL" || list="$target"
+case "$cmd" in
+  start) for s in $list; do start "$s"; done ;;
+  stop)  for s in $list; do stop "$s"; done ;;
+  status) for s in $ALL; do [ -x "$SVC/$s/run" ] || continue; alive "$s" && echo "$s: jalan" || echo "$s: mati"; done ;;
+  *) sed -n 2,6p "$0" ;;
+esac

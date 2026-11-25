@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+"""metaads — Meta (Facebook) Ads via Graph API untuk agent kantor.
+
+Token dibaca dari env META_ADS_TOKEN, kalau kosong dari
+/opt/data/kantor/meta/admin.env (META_ADS_TOKEN=...).
+
+Contoh:
+  metaads me
+  metaads accounts
+  metaads account act_123
+  metaads campaigns [--account act_123]
+  metaads insights [--account act_123] --days 7 --level campaign
+  metaads mcp-check
+
+--account opsional: default dari META_ADS_DEFAULT_ACCOUNT
+
+Catatan: server MCP resmi Meta (https://mcp.facebook.com/ads) butuh
+permission ads_mcp_management yang tidak dimiliki token Graph API biasa.
+`metaads mcp-check` memverifikasi itu.
+"""
+import json
+import os
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+GRAPH = "https://graph.facebook.com/v23.0"
+ENV_FILE = "/opt/data/kantor/meta/admin.env"
+MCP_URL = "https://mcp.facebook.com/ads"
+
+
+def env_value(name: str) -> str:
+    v = os.environ.get(name, "").strip()
+    if v:
+        return v
+    if os.path.exists(ENV_FILE):
+        for line in open(ENV_FILE):
+            line = line.strip()
+            if line.startswith(name + "="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
+def token() -> str:
+    t = env_value("META_ADS_TOKEN")
+    if not t:
+        sys.exit("ERROR: META_ADS_TOKEN tidak ditemukan (env atau %s)" % ENV_FILE)
+    return t
+
+
+def default_account() -> str:
+    """Ad account default dari META_ADS_DEFAULT_ACCOUNT di admin.env."""
+    a = env_value("META_ADS_DEFAULT_ACCOUNT")
+    if not a:
+        sys.exit("Akun belum ditentukan: pakai --account act_xxx (atau isi META_ADS_DEFAULT_ACCOUNT di %s)" % ENV_FILE)
+    return a if a.startswith("act_") else "act_" + a
+
+
+def call(path: str, **params):
+    params = {k: v for k, v in params.items() if v is not None}
+    params["access_token"] = token()
+    url = "%s/%s?%s" % (GRAPH.rstrip("/"), path.lstrip("/"), urllib.parse.urlencode(params))
+    try:
+        with urllib.request.urlopen(url, timeout=45) as r:
+            return json.load(r)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", "replace")
+        try:
+            err = json.loads(body).get("error", {})
+        except Exception:
+            err = {"message": body[:400]}
+        sys.exit("Graph API %s %s: %s (code %s)"
+                 % (e.code, path, err.get("message"), err.get("code")))
+
+
+def out(data, as_json: bool):
+    if as_json:
+        print(json.dumps(data, indent=1, ensure_ascii=False))
+        return data
+    return data
+
+
+def parse(argv):
+    opts, pos = {}, []
+    i = 0
+    flags = {"--account", "--days", "--level", "--since", "--until",
+             "--fields", "--limit", "--status", "--json"}
+    while i < len(argv):
+        a = argv[i]
+        if a.startswith("--"):
+            name = a[2:]
+            if a == "--json":
+                opts["json"] = True
+                i += 1
+                continue
+            if a not in flags:
+                sys.exit("flag tidak dikenal: %s" % a)
+            if i + 1 >= len(argv):
+                sys.exit("flag %s butuh nilai" % a)
+            opts[name] = argv[i + 1]
+            i += 2
+            continue
+        pos.append(a)
+        i += 1
+    return pos, opts
+
+
+def main():
+    argv = sys.argv[1:]
+    if not argv or argv[0] in ("-h", "--help", "help"):
+        print(__doc__)
+        return
+    cmd, rest = argv[0], argv[1:]
+    pos, o = parse(rest)
+    as_json = bool(o.get("json"))
+
+    if cmd == "me":
+        d = call("me", fields="id,name")
+        print(json.dumps(d, indent=1, ensure_ascii=False))
+        p = call("me/permissions")
+        granted = [x["permission"] for x in p.get("data", []) if x.get("status") == "granted"]
+        print("permissions:", ", ".join(granted))
+        print("punya ads_mcp_management:", "ya" if "ads_mcp_management" in granted else "TIDAK")
+
+    elif cmd == "accounts":
+        d = call("me/adaccounts", fields="account_id,name,account_status,currency,amount_spent",
+                 limit=o.get("limit", "100"))
+        rows = d.get("data", [])
+        if as_json:
+            out(rows, True)
+            return
+        print("%-24s %-8s %-4s %s" % ("AD ACCOUNT ID", "STATUS", "CUR", "NAMA"))
+        for r in rows:
+            print("%-24s %-8s %-4s %s" % ("act_" + str(r.get("account_id")),
+                                          r.get("account_status"), r.get("currency"), r.get("name")))
+        print("\ntotal: %d ad account" % len(rows))
+
+    elif cmd == "account":
+        if not pos:
+            sys.exit("pakai: metaads account act_xxx")
+        act = pos[0] if pos[0].startswith("act_") else "act_" + pos[0]
+        d = call(act, fields="account_id,name,account_status,currency,timezone_name,"
+                             "amount_spent,balance,spend_cap,funding_source_details")
+        print(json.dumps(d, indent=1, ensure_ascii=False))
+
+    elif cmd == "campaigns":
+        act = o.get("account") or (pos[0] if pos else None) or default_account()
+        act = act if act.startswith("act_") else "act_" + act
+        d = call(act + "/campaigns",
+                 fields="id,name,status,effective_status,objective,daily_budget,lifetime_budget,"
+                        "created_time,start_time,stop_time",
+                 limit=o.get("limit", "100"),
+                 effective_status=o.get("status"))
+        rows = d.get("data", [])
+        if as_json:
+            out(rows, True)
+            return
+        for r in rows:
+            budget = r.get("daily_budget") or r.get("lifetime_budget") or "-"
+            print("%-20s %-12s %-10s %-14s %s" % (r.get("id"), r.get("effective_status"),
+                                                  r.get("objective") or "-", budget, r.get("name")))
+        print("\ntotal: %d campaign" % len(rows))
+
+    elif cmd == "insights":
+        act = o.get("account") or (pos[0] if pos else None) or default_account()
+        act = act if act.startswith("act_") else "act_" + act
+        if o.get("since") and o.get("until"):
+            rng = {"time_range": json.dumps({"since": o["since"], "until": o["until"]})}
+        else:
+            rng = {"date_preset": "last_%sd" % (o.get("days") or "7")}
+        d = call(act + "/insights",
+                 fields="campaign_name,adset_name,ad_name,spend,impressions,clicks,ctr,cpc,cpm,"
+                        "reach,actions,purchase_roas",
+                 level=o.get("level", "campaign"),
+                 limit=o.get("limit", "100"), **rng)
+        rows = d.get("data", [])
+        if as_json:
+            out(rows, True)
+            return
+        for r in rows:
+            print("%-40s spend=%-10s impr=%-8s clicks=%-6s ctr=%-6s cpc=%s"
+                  % ((r.get("campaign_name") or r.get("adset_name") or r.get("ad_name") or "-")[:40],
+                     r.get("spend", "0"), r.get("impressions", "0"), r.get("clicks", "0"),
+                     r.get("ctr", "-"), r.get("cpc", "-")))
+        if not rows:
+            print("(tidak ada data pada rentang ini)")
+
+    elif cmd == "mcp-check":
+        req = urllib.request.Request(
+            MCP_URL,
+            data=json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                             "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                                        "clientInfo": {"name": "hermes", "version": "0.23.0"}}}).encode(),
+            headers={"Authorization": "Bearer " + token(), "Content-Type": "application/json",
+                     "Accept": "application/json, text/event-stream"}, method="POST")
+        try:
+            with urllib.request.urlopen(req, timeout=45) as r:
+                print("MCP OK (%s)" % r.status)
+                print(r.read().decode("utf-8", "replace")[:800])
+        except urllib.error.HTTPError as e:
+            body = e.read().decode("utf-8", "replace")[:400]
+            print("MCP GAGAL: HTTP %s" % e.code)
+            print(body)
+            if e.code == 401:
+                print("\nArtinya: token tidak punya permission ads_mcp_management "
+                      "(atau token tidak diterima MCP). Pakai Graph API (command lain "
+                      "di tool ini) atau bikin token/OAuth baru.")
+                sys.exit(1)
+            sys.exit(1)
+
+    else:
+        sys.exit("command tidak dikenal: %s (lihat metaads --help)" % cmd)
+
+
+if __name__ == "__main__":
+    main()

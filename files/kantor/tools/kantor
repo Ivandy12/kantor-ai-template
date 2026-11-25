@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+"""kantor — perintah owner untuk Kantor AI (dipakai Arga di Telegram).
+
+  kantor tim                                   daftar agent (nama | jabatan | status)
+  kantor tugas "judul" "detail" [--ke "Nama"]  bikin tugas (default ke Arga/CEO)
+  kantor daftar [N]                            N tugas terakhir (default 10)
+  kantor cek KODE-12                           status + komentar terakhir sebuah tugas
+  kantor approval                              approval yang menunggu keputusan owner
+  kantor link                                  link web kantor
+"""
+import json, os, sys, urllib.request, urllib.error
+
+CONF = '/opt/data/kantor/kantor.conf'
+cfg = {}
+try:
+    for line in open(CONF):
+        line = line.strip()
+        if '=' in line and not line.startswith('#'):
+            k, v = line.split('=', 1)
+            cfg[k] = v.strip().strip('"').strip("'")
+except OSError:
+    pass
+API = 'http://127.0.0.1:3101/api'
+C = cfg.get('COMPANY_ID', '')
+try:
+    KEY = open('/opt/data/kantor/.board.key').read().strip()
+except OSError:
+    print('Kunci board belum ada. Jalankan ulang setup kantor.'); sys.exit(1)
+
+
+def req(method, path, body=None):
+    data = json.dumps(body).encode() if body is not None else None
+    r = urllib.request.Request(API + path, data=data, method=method, headers={
+        'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(r, timeout=60) as resp:
+            t = resp.read().decode()
+            return json.loads(t) if t else {}
+    except urllib.error.HTTPError as e:
+        print(f'Gagal ({e.code}): {e.read().decode()[:300]}'); sys.exit(1)
+
+
+def items(d):
+    return d if isinstance(d, list) else (d.get('items') or d.get('data') or d.get('issues') or d.get('agents') or [])
+
+
+def agents():
+    return [a for a in items(req('GET', f'/companies/{C}/agents')) if a.get('status') != 'terminated']
+
+
+def find_agent(name):
+    n = name.lstrip('@').lower()
+    al = agents()
+    for a in al:
+        if a['name'].lower() == n:
+            return a
+    for a in al:
+        if n in a['name'].lower() or n == (a.get('title') or '').lower():
+            return a
+    print('Agent "%s" tidak ada. Tim sekarang: %s' % (name, ', '.join(a['name'] for a in al))); sys.exit(1)
+
+
+def main(a):
+    if not a or a[0] in ('-h', '--help', 'help'):
+        print(__doc__); return
+    cmd = a[0]
+    if cmd == 'tim':
+        for x in agents():
+            print(f"{x['name']} | {x.get('title') or x.get('role')} | {x.get('status')}")
+    elif cmd == 'tugas':
+        rest = a[1:]; to = None
+        if '--ke' in rest:
+            i = rest.index('--ke'); to = rest[i + 1]; rest = rest[:i] + rest[i + 2:]
+        if not rest:
+            print('Pakai: kantor tugas "judul" "detail" [--ke Nama]'); sys.exit(1)
+        title = rest[0]; desc = rest[1] if len(rest) > 1 else ''
+        ag = find_agent(to) if to else next((x for x in agents() if x.get('role') == 'ceo'), None)
+        body = {'title': title, 'description': desc + '\n\n_Dibuat owner lewat Telegram._', 'status': 'todo'}
+        if ag:
+            body['assigneeAgentId'] = ag['id']
+        i = req('POST', f'/companies/{C}/issues', body)
+        print(f"Tugas {i.get('identifier')} dibuat untuk {ag['name'] if ag else '-'}: {title}")
+    elif cmd == 'daftar':
+        n = int(a[1]) if len(a) > 1 and a[1].isdigit() else 10
+        al = {x['id']: x['name'] for x in agents()}
+        for i in items(req('GET', f'/companies/{C}/issues'))[:n]:
+            print(f"{i.get('identifier')} [{i.get('status')}] {al.get(i.get('assigneeAgentId'), '-')}: {i.get('title')}")
+    elif cmd == 'cek' and len(a) > 1:
+        i = req('GET', f'/issues/{a[1]}')
+        print(f"{i.get('identifier')} [{i.get('status')}] {i.get('title')}")
+        cm = items(req('GET', f"/issues/{i['id']}/comments"))
+        if cm:
+            print('Komentar terakhir:\n' + (cm[-1].get('body') or '')[:1500])
+    elif cmd == 'approval':
+        ap = [x for x in items(req('GET', f'/companies/{C}/approvals')) if x.get('status') == 'pending']
+        print('\n'.join(f"- {x.get('title') or x.get('type')} (id {x['id']})" for x in ap) or 'Tidak ada approval yang menunggu.')
+    elif cmd == 'link':
+        print(cfg.get('PUBLIC_URL', '-'))
+    else:
+        print(__doc__)
+
+
+main(sys.argv[1:])

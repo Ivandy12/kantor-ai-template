@@ -1,0 +1,228 @@
+#!/usr/bin/env python3
+"""pc — simple Paperclip helper for Kantor AI agents.
+
+Uses $PAPERCLIP_API_URL, $PAPERCLIP_API_KEY, $PAPERCLIP_RUN_ID (provided automatically in every run).
+
+Commands:
+  pc me                                         who am I (id, name, boss)
+  pc team                                       list agents (name | title | reports to)
+  pc issue <ISSUE>                              show task (status, description, children)
+  pc children <ISSUE>                           list sub-tasks with status + last comment
+  pc subtask <PARENT> --to "<agent name>" --title "..." --desc "..."
+                                                create a sub-task assigned to an agent (wakes them)
+  pc comment <ISSUE> "<text>" [--attach FILE ...]
+                                                post a comment, optionally with attached files
+  pc status <ISSUE> <todo|in_progress|blocked|in_review|done|cancelled>
+  pc approval <ISSUE> --title "..." --details "..."
+                                                request Board approval (owner) — shows in Inbox + Telegram
+  pc approval-status <APPROVAL_ID>              pending / approved / rejected
+  pc hire --name "Rian" --title "Meta Ads Specialist" --role cmo --tugas "..." [--atasan "Nama"] [--issue KODE-12]
+                                                rekrut agent baru (1 langkah). Otomatis jadi pengajuan resmi di Inbox owner;
+                                                setelah disetujui agent LANGSUNG aktif, tidak perlu langkah teknis lain.
+<ISSUE> = identifier like DIG-12 or uuid.
+"""
+import json, os, re, random, sys, uuid, urllib.request, urllib.error, mimetypes, argparse
+
+API = os.environ.get('PAPERCLIP_API_URL', 'http://127.0.0.1:3101').rstrip('/')
+# Fallback to local port if URL has unresolvable external domain
+if not any(h in API for h in ("127.0.0.1", "localhost")):
+    API = 'http://127.0.0.1:3101'
+if not API.endswith('/api'):
+    API += '/api'
+KEY = os.environ.get('PAPERCLIP_API_KEY', '')
+RUN = os.environ.get('PAPERCLIP_RUN_ID', '')
+# Claude token-per-run: kalau env kosong, ambil token run INI dari file yang ditulis tools/hermes-run
+if not KEY and RUN.replace('-', '').isalnum():
+    try:
+        KEY = open('/opt/data/kantor/run-tokens/' + RUN + '.token').read().strip()
+    except OSError:
+        pass
+
+
+def req(method, path, body=None, raw=None, ctype='application/json'):
+    headers = {'Authorization': 'Bearer ' + KEY}
+    if RUN:
+        headers['X-Paperclip-Run-Id'] = RUN
+    data = None
+    if raw is not None:
+        data = raw; headers['Content-Type'] = ctype
+    elif body is not None:
+        data = json.dumps(body).encode(); headers['Content-Type'] = 'application/json'
+    r = urllib.request.Request(API + path, data=data, method=method, headers=headers)
+    try:
+        with urllib.request.urlopen(r, timeout=60) as resp:
+            txt = resp.read().decode() or '{}'
+            return json.loads(txt)
+    except urllib.error.HTTPError as e:
+        msg = e.read().decode()[:400]
+        sys.exit(f'ERROR {e.code} {method} {path}: {msg}\n(Kalau 401/403: berhenti dan lapor. Jangan cari kunci lain.)')
+
+
+def me():
+    return req('GET', '/agents/me')
+
+
+def company():
+    return os.environ.get('PAPERCLIP_COMPANY_ID') or me()['companyId']
+
+
+def agents():
+    d = req('GET', f'/companies/{company()}/agents')
+    return d if isinstance(d, list) else d.get('items', d.get('agents', []))
+
+
+def agent_by_name(name):
+    al = agents()
+    for a in al:
+        if a['name'].lower() == name.lower():
+            return a
+    cand = [a for a in al if name.lower() in a['name'].lower()]
+    if len(cand) == 1:
+        return cand[0]
+    sys.exit(f'ERROR agent "{name}" tidak ditemukan / ambigu. Pakai `pc team` untuk lihat nama.')
+
+
+def issue(ref):
+    return req('GET', f'/issues/{ref}')
+
+
+def children(ref):
+    i = issue(ref)
+    d = req('GET', f'/companies/{i["companyId"]}/issues?parentId={i["id"]}')
+    items = d if isinstance(d, list) else d.get('items', d.get('issues', []))
+    return [c for c in items if c.get('parentId') == i['id']]
+
+
+def main():
+    if len(sys.argv) < 2 or sys.argv[1] in ('-h', '--help', 'help'):
+        print(__doc__); return
+    cmd, rest = sys.argv[1], sys.argv[2:]
+    if cmd == 'me':
+        m = me(); print(json.dumps({k: m.get(k) for k in ('id', 'name', 'title', 'role', 'reportsTo', 'companyId')}, indent=1))
+    elif cmd == 'team':
+        al = agents(); names = {a['id']: a['name'] for a in al}
+        for a in al:
+            print(f'{a["name"]} | {a.get("title") or a.get("role")} | lapor ke: {names.get(a.get("reportsTo"), "-")} | {a.get("status")}')
+    elif cmd == 'issue':
+        i = issue(rest[0])
+        print(json.dumps({k: i.get(k) for k in ('identifier', 'title', 'status', 'description')}, indent=1, ensure_ascii=False))
+        for c in children(rest[0]):
+            print(f'  child {c["identifier"]} [{c["status"]}] {c["title"]}')
+    elif cmd == 'children':
+        al = {a['id']: a['name'] for a in agents()}
+        for c in children(rest[0]):
+            cm = req('GET', f'/issues/{c["id"]}/comments')
+            cm = cm if isinstance(cm, list) else cm.get('items', cm.get('comments', []))
+            last = (cm[-1]['body'][:300].replace('\n', ' ') if cm else '-')
+            print(f'{c["identifier"]} [{c["status"]}] {al.get(c.get("assigneeAgentId"), "-")}: {c["title"]}\n   terakhir: {last}')
+    elif cmd == 'subtask':
+        p = argparse.ArgumentParser(); p.add_argument('parent'); p.add_argument('--to', required=True)
+        p.add_argument('--title', required=True); p.add_argument('--desc', default='')
+        a = p.parse_args(rest)
+        par = issue(a.parent); ag = agent_by_name(a.to)
+        c = req('POST', f'/companies/{par["companyId"]}/issues', {
+            'title': a.title, 'description': a.desc, 'parentId': par['id'],
+            'assigneeAgentId': ag['id'], 'status': 'todo'})
+        print(f'OK sub-tugas {c.get("identifier")} dibuat untuk {ag["name"]}')
+    elif cmd == 'comment':
+        p = argparse.ArgumentParser(); p.add_argument('issue'); p.add_argument('text'); p.add_argument('--attach', nargs='*', default=[])
+        a = p.parse_args(rest)
+        i = issue(a.issue); ids = []
+        for f in a.attach:
+            b = '----pc' + uuid.uuid4().hex
+            ct = mimetypes.guess_type(f)[0] or 'application/octet-stream'
+            body = (f'--{b}\r\nContent-Disposition: form-data; name="file"; filename="{os.path.basename(f)}"\r\n'
+                    f'Content-Type: {ct}\r\n\r\n').encode() + open(f, 'rb').read() + f'\r\n--{b}--\r\n'.encode()
+            up = req('POST', f'/companies/{i["companyId"]}/issues/{i["id"]}/attachments', raw=body,
+                     ctype='multipart/form-data; boundary=' + b)
+            ids.append(up.get('id') or (up.get('attachment') or {}).get('id'))
+        payload = {'body': a.text}
+        if ids:
+            payload['attachmentIds'] = [x for x in ids if x]
+        req('POST', f'/issues/{i["id"]}/comments', payload)
+        print(f'OK komentar terkirim ke {i["identifier"]}' + (f' dengan {len(ids)} lampiran' if ids else ''))
+    elif cmd == 'status':
+        i = issue(rest[0]); req('PATCH', f'/issues/{i["id"]}', {'status': rest[1]})
+        print(f'OK {i["identifier"]} -> {rest[1]}')
+    elif cmd == 'approval':
+        p = argparse.ArgumentParser(); p.add_argument('issue'); p.add_argument('--title', required=True); p.add_argument('--details', required=True)
+        a = p.parse_args(rest)
+        i = issue(a.issue); m = me()
+        ap = req('POST', f'/companies/{i["companyId"]}/approvals', {
+            'type': 'request_board_approval', 'requestedByAgentId': m['id'],
+            'payload': {'title': a.title, 'details': a.details, 'issue': i['identifier']}, 'issueIds': [i['id']]})
+        print(f'OK approval {ap.get("id")} dibuat (status {ap.get("status")}). Tunggu sampai approved sebelum eksekusi.')
+    elif cmd == 'approval-status':
+        ap = req('GET', f'/approvals/{rest[0]}'); print(ap.get('status'))
+    elif cmd == 'hire':
+        roles = ['cto', 'cmo', 'cfo', 'security', 'engineer', 'designer', 'pm', 'qa', 'devops', 'researcher', 'general']
+        p = argparse.ArgumentParser(prog='pc hire'); p.add_argument('--name', required=True); p.add_argument('--title', required=True)
+        p.add_argument('--role', default='general', choices=roles); p.add_argument('--tugas', required=True)
+        p.add_argument('--atasan', default=None); p.add_argument('--issue', default=None)
+        a = p.parse_args(rest)
+        m = me(); cid = m['companyId']; al = agents()
+        for x in al:
+            if x['name'].lower() == a.name.lower() and x.get('status') != 'terminated':
+                sys.exit(f'ERROR agent "{x["name"]}" sudah ada (status {x.get("status")}). Pakai nama lain atau beri tugas ke agent itu.')
+        boss = agent_by_name(a.atasan) if a.atasan else m
+        cfg = {}
+        try:
+            for line in open('/opt/data/kantor/kantor.conf'):
+                if '=' in line and not line.startswith('#'):
+                    k, v = line.strip().split('=', 1); cfg[k] = v.strip().strip('"')
+        except OSError:
+            pass
+        rules = ''
+        try:
+            rules = open('/opt/data/kantor/_shared_rules.md').read()
+        except OSError:
+            pass
+        slug = re.sub(r'[^a-z0-9]+', '-', a.name.lower()).strip('-') or 'staf'
+        cwd = f'/opt/data/kantor/staff/{slug}'
+        os.makedirs(cwd, exist_ok=True)
+        owner = f'{cfg.get("SAPAAN", "")} {cfg.get("OWNER", "owner")}'.strip()
+        instr = (f'# {a.name} — {a.title}\n\nKamu {a.name}, {a.title} di kantor AI **{cfg.get("BRAND", "Kantor AI")}**. '
+                 f'Atasan langsungmu: {boss["name"]}. Pemilik/Board: {owner}.\n\n## Tugas utama\n{a.tugas}\n\n{rules}')
+        env = {'HOME': {'type': 'plain', 'value': '/opt/data'},
+               'HERMES_HOME': {'type': 'plain', 'value': '/opt/data/profiles/kantorstaff'},
+               'TERMINAL_CWD': {'type': 'plain', 'value': cwd},
+               'PAPERCLIP_API_URL': {'type': 'plain', 'value': 'http://127.0.0.1:3100'}}
+        palettes = ['bubblegum-sky', 'pink-lemonade', 'orchid-peach', 'coral-mint', 'arctic-blue', 'solar-flare', 'violet-ember',
+                    'deep-tide', 'golden-hour', 'tangerine-cobalt', 'electric-grove', 'flamingo-jade', 'turquoise-cherry', 'ultraviolet-tide']
+        # model ikut menu "Model AI" kalau sudah diterapkan, kalau belum pakai 9Router
+        mdl, prov = cfg.get('MODEL') or 'ag/gemini-3.8-flash-low', 'auto'
+        try:
+            _m = json.load(open('/opt/data/kantor3d/state/model-ai.json'))
+            if _m.get('model') and _m.get('applied_at'):
+                mdl, prov = _m['model'], 'auto'
+        except (OSError, ValueError):
+            pass
+        payload = {
+            'name': a.name, 'role': a.role, 'title': a.title, 'capabilities': a.tugas[:500], 'reportsTo': boss['id'],
+            'appearance': {'schemaVersion': 1, 'characterVersion': 'cap-v1', 'paletteId': random.choice(palettes)},
+            'adapterType': 'hermes_local',
+            'adapterConfig': {'model': mdl, 'provider': prov,
+                              'toolsets': 'terminal,file,web,skills,todo', 'maxTurnsPerRun': 45, 'timeoutSec': 1800,
+                              'persistSession': True, 'quiet': True, 'cwd': cwd,
+                              'hermesCommand': '/opt/data/kantor/tools/hermes-run',
+                              'paperclipApiUrl': 'http://127.0.0.1:3100', 'env': env},
+            'runtimeConfig': {'heartbeat': {'enabled': False, 'maxConcurrentRuns': 5, 'maxTurnContinuation': {'enabled': True, 'maxAttempts': 3, 'delayMs': 5000}}},
+            'instructionsBundle': {'entryFile': 'AGENTS.md', 'files': {'AGENTS.md': instr}},
+            'desiredSkills': ['paperclip'],
+            'approvalReason': f'{m["name"]} mengajukan rekrut {a.name} ({a.title}): {a.tugas[:300]}',
+        }
+        if a.issue:
+            payload['sourceIssueId'] = issue(a.issue)['id']
+        r = req('POST', f'/companies/{cid}/agent-hires', payload)
+        ag = r.get('agent') or r; ap = r.get('approval') or {}
+        if ag.get('status') == 'pending_approval':
+            print(f'OK pengajuan rekrut {ag.get("name")} terkirim ke Inbox owner (approval {ap.get("id")}). '
+                  'Setelah owner menyetujui, agent otomatis aktif. Tidak perlu langkah teknis lain.')
+        else:
+            print(f'OK agent {ag.get("name")} sudah aktif (status {ag.get("status")}).')
+    else:
+        print(__doc__); sys.exit(2)
+
+
+if __name__ == '__main__':
+    main()

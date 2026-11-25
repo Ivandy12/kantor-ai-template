@@ -1,0 +1,1 @@
+var o=Object.defineProperty;var e=(r,t)=>o(r,"name",{value:t,configurable:!0});import{i as s}from"./rolldown-runtime-ZpX3ckPj.js";import{Kr as a,S as n}from"./createLucideIcon-BzhCzcRn.js";var i=s(a(),1);function c({className:r,...t}){return(0,i.jsx)("div",{"data-slot":"skeleton",className:n("bg-accent/75 rounded-md",r),...t})}e(c,"Skeleton");export{c as t};

@@ -1,0 +1,9 @@
+1:"$Sreact.fragment"
+2:I[47257,["/kantor3d/_next/static/chunks/ff1a16fafef87110.js","/kantor3d/_next/static/chunks/0bd6498bda341889.js"],"ClientPageRoot"]
+3:I[24320,["/kantor3d/_next/static/chunks/b4c1ca1d034aacc4.js"],"default"]
+6:I[97367,["/kantor3d/_next/static/chunks/ff1a16fafef87110.js","/kantor3d/_next/static/chunks/0bd6498bda341889.js"],"OutletBoundary"]
+7:"$Sreact.suspense"
+0:{"buildId":"Bpf0i2rpk4vaVZYyujzxO","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","script","script-0",{"src":"/kantor3d/_next/static/chunks/b4c1ca1d034aacc4.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+4:{}
+5:"$0:rsc:props:children:0:props:serverProvidedParams:params"
+8:null

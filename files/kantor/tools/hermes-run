@@ -1,0 +1,50 @@
+#!/bin/bash
+# Claude token-per-run (31 Okt 2026): Hermes baru menjalankan sesi lewat gateway, jadi env secret dari Paperclip
+# nggak sampai ke terminal agent. Wrapper ini menaruh token run di file 600 selama run; `pc` membacanya lewat PAPERCLIP_RUN_ID.
+# v1.3.1: kalau Hermes berhenti karena batas langkah (max turns), tulis penanda <run>.stop supaya adapter
+# melapor "max_turns_exhausted" -> Paperclip melanjutkan otomatis, bukan bikin issue blocked.
+DIR=/opt/data/kantor/run-tokens
+HERMES=/opt/hermes/.venv/bin/hermes
+export PAPERCLIP_API_URL=http://127.0.0.1:3101
+umask 077
+mkdir -p "$DIR"
+find "$DIR" -type f \( -name '*.token' -o -name '*.stop' \) -mmin +2880 -delete 2>/dev/null
+f=""
+okid=""
+[[ "$PAPERCLIP_RUN_ID" =~ ^[A-Za-z0-9-]+$ ]] && okid=1
+if [ -n "$PAPERCLIP_API_KEY" ] && [ -n "$okid" ]; then
+  f="$DIR/$PAPERCLIP_RUN_ID.token"
+  printf '%s' "$PAPERCLIP_API_KEY" > "$f"
+fi
+maxt=""
+prev=""
+for a in "$@"; do
+  [ "$prev" = "--max-turns" ] && maxt="$a"
+  prev="$a"
+done
+errf=$(mktemp "$DIR/err.XXXXXX")
+"$HERMES" "$@" <&0 2> >(tee "$errf" >&2) &
+pid=$!
+trap 'kill -TERM "$pid" 2>/dev/null' TERM INT
+wait "$pid"; rc=$?
+while kill -0 "$pid" 2>/dev/null; do wait "$pid"; rc=$?; done
+[ -n "$f" ] && rm -f "$f"
+sleep 0.5
+if [ "$rc" = "1" ] && [ -n "$okid" ] && [[ "$maxt" =~ ^[0-9]+$ ]]; then
+  HH="${HERMES_HOME:-/opt/data}"
+  sid=$(grep -oE 'session_id: *[A-Za-z0-9_-]+' "$errf" 2>/dev/null | tail -1 | sed 's/session_id: *//')
+  hit=$(python3 - "$HH/state.db" "$sid" "$maxt" <<'PY' 2>/dev/null
+import sqlite3, sys
+db, sid, maxt = sys.argv[1], sys.argv[2], int(sys.argv[3])
+try:
+    c = sqlite3.connect(f"file:{db}?mode=ro", uri=True, timeout=5)
+    r = c.execute("select api_call_count from sessions where id = ?", (sid,)).fetchone()
+    print("1" if r and (r[0] or 0) >= max(1, maxt - 3) else "0")
+except Exception:
+    print("0")
+PY
+)
+  [ "$hit" = "1" ] && printf 'max_turns_exhausted' > "$DIR/$PAPERCLIP_RUN_ID.stop"
+fi
+rm -f "$errf"
+exit "$rc"

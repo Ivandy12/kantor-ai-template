@@ -1,0 +1,3 @@
+#!/bin/bash
+# Riset Meta Ad Library: adlib "kata kunci" [--negara ID] [--maks 60] [--json]
+exec node /opt/data/kantor/tools/adlib.cjs "$@"
