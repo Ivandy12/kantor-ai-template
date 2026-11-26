@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # =====================================================================
 #  Kantor AI — installer untuk VPS Hermes (Sumopod)
 #  Pasang: Paperclip + tampilan Kantor AI + Kantor 3D + Rapat + Arga (CEO)
@@ -6,7 +6,7 @@
 #  Install baru:
 #    bash install.sh --brand "PT Maju Jaya" --owner "Budi" --sapaan Pak \
 #      --email budi@email.com --password 'RahasiaKuat123' \
-#      --url https://hermes-xxxx-3100.jkt1.sumopod.my.id \
+#      --url https://hermes-xxxx-3200.jkt1.sumopod.my.id \  # Gunakan port 3200 untuk edisi JJK (penjual pakai 3100)
 #      [--telegram-token 123:ABC --telegram-user 123456789] \
 #      [--router-key KEY9ROUTER] [--model ag/gemini-3.8-flash-low]
 #
@@ -103,12 +103,12 @@ wait_health() { # tunggu Paperclip sehat & stabil (3x berturut-turut sehat), mak
 # ---------------------------------------------------------------- cek kesehatan
 cek() {
   local bad=0
-  for p in "3101/api/health:Paperclip" "3100/api/health:Pintu depan (proxy)" "3300/kantor3d:Kantor 3D"; do
+  for p in "3201/api/health:Paperclip" "3200/api/health:Pintu depan (proxy)" "3400/kantor3d:Kantor 3D"; do
     local u="${p%%:*}" n="${p#*:}"
     local c; c=$(curl -s -m 5 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$u" || true)
     if [[ "$c" =~ ^(200|204|301|302|307|308)$ ]]; then ok "$n jalan ($c)"; else log "⚠️  $n belum jalan (kode $c)"; bad=1; fi
   done
-  if (exec 3<>/dev/tcp/127.0.0.1/18790) 2>/dev/null; then ok "Adapter rapat/chat jalan"; else log "⚠️  Adapter rapat/chat belum jalan"; bad=1; fi
+  if (exec 3<>/dev/tcp/127.0.0.1/18792) 2>/dev/null; then ok "Adapter rapat/chat jalan"; else log "⚠️  Adapter rapat/chat belum jalan"; bad=1; fi
   if [ -f "$SVC/kantor-telegram/run" ]; then
     if pgrep -f "profiles/kantortg" >/dev/null || pgrep -f "kantortg" >/dev/null; then ok "Bot Telegram Arga jalan"; else log "⚠️  Bot Telegram Arga belum jalan"; bad=1; fi
   fi
@@ -121,7 +121,7 @@ clean_name() { printf '%s' "$1" | tr -cd 'A-Za-z0-9 .&-' | sed 's/^ *//; s/ *$//
 BRAND="$(clean_name "$BRAND")"; OWNER="$(clean_name "$OWNER")"; SAPAAN="$(clean_name "$SAPAAN")"
 [ -n "$BRAND" ] || die "--brand (nama perusahaan) wajib diisi"
 [ -n "$OWNER" ] || die "--owner (nama pemilik) wajib diisi"
-[ -n "$PUBLIC_URL" ] || die "--url (link Sumopod port 3100, contoh https://hermes-xxxx-3100.jkt1.sumopod.my.id) wajib diisi"
+[ -n "$PUBLIC_URL" ] || die "--url (link Sumopod port 3200, contoh https://hermes-xxxx-3200.eu5.sumopod.my.id) wajib diisi"
 [[ "$PUBLIC_URL" =~ ^https?:// ]] || PUBLIC_URL="https://$PUBLIC_URL"
 PUBLIC_HOST="$(printf '%s' "$PUBLIC_URL" | sed -E 's#^https?://##; s#/.*##')"
 if [ "$MODE" = install ] && [ ! -f "$KA/.board.key" ]; then
@@ -257,7 +257,7 @@ import json, sys
 f, host = sys.argv[1], sys.argv[2]
 c = json.load(open(f))
 s = c.setdefault("server", {})
-s.update({"deploymentMode": "authenticated", "exposure": "private", "bind": "lan", "host": "0.0.0.0", "port": 3101, "serveUi": True})
+s.update({"deploymentMode": "authenticated", "exposure": "private", "bind": "lan", "host": "0.0.0.0", "port": 3201, "serveUi": True})
 hosts = s.get("allowedHostnames") or []
 for h in [host, "127.0.0.1", "localhost"]:
     if h and h not in hosts:
@@ -266,8 +266,8 @@ s["allowedHostnames"] = hosts
 c.setdefault("telemetry", {})["enabled"] = False
 json.dump(c, open(f, "w"), indent=2)
 PY
-PG_PORT=$(python3 -c "import json;print(json.load(open('$PCCONF')).get('database',{}).get('embeddedPostgresPort',54329))")
-ok "Paperclip dikonfigurasi (port 3101, database $PG_PORT, domain $PUBLIC_HOST)"
+PG_PORT=$(python3 -c "import json;print(json.load(open('$PCCONF')).get('database',{}).get('embeddedPostgresPort',54330))")
+ok "Paperclip dikonfigurasi (port 3201, database $PG_PORT, domain $PUBLIC_HOST)"
 
 # ---------------------------------------------------------------- 4. file kantor
 step "4/9 Salin tampilan Kantor AI, Kantor 3D & Rapat"
@@ -297,7 +297,7 @@ chmod +x "$DATA/scripts/kantor_watchdog.sh"
 node "$KA/tools/patch-adapter.js" "$NPMG/lib/node_modules/paperclipai/node_modules/@paperclipai/hermes-paperclip-adapter/dist/server/execute.js" >>"$LOGF" 2>&1 || log "⚠️  patch adapter dilewati"
 node "$KA/tools/patch-models.js" "$NPMG/lib/node_modules/paperclipai/node_modules/@paperclipai/server/dist/adapters/registry.js" >>"$LOGF" 2>&1 || log "⚠️  daftar model chat dilewati"
 # adapter: port database & lokasi Paperclip mengikuti VPS ini
-perl -pi -e 's/port: 54329,/port: parseInt(process.env.PAPERCLIP_PG_PORT || "54329", 10),/' "$KD/adapter/paperclip-gateway-adapter.js"
+perl -pi -e 's/port: 54329,/port: parseInt(process.env.PAPERCLIP_PG_PORT || "54330", 10),/' "$KD/adapter/paperclip-gateway-adapter.js"
 bash "$KA/tools/adlib-setup.sh" >>"$LOGF" 2>&1 && log "alat riset Ad Library siap" || log "⚠️  alat riset Ad Library belum siap (browser gagal diunduh), bisa diulang: bash $KA/tools/adlib-setup.sh"
 ok "file kantor tersalin"
 
@@ -391,7 +391,7 @@ exec >> $DATA/logs/paperclip.log 2>&1
 $SETUID"
 write_service kantor-proxy "#!/bin/sh
 export HOME=$DATA/home PATH=\"/usr/local/bin:/usr/bin:/bin:\$PATH\"
-export PROXY_PORT=3100 PAPERCLIP_TARGET=http://127.0.0.1:3101 KANTOR3D_TARGET=http://127.0.0.1:3300
+export PROXY_PORT=3200 PAPERCLIP_TARGET=http://127.0.0.1:3201 KANTOR3D_TARGET=http://127.0.0.1:3400
 cd $KD/proxy
 set -- $(command -v node) proxy.js
 exec >> $KD/proxy.log 2>&1
@@ -400,15 +400,16 @@ write_service kantor-adapter "#!/bin/sh
 export HOME=$DATA/home PATH=\"/usr/local/bin:/usr/bin:/bin:\$PATH\"
 . $CONF
 PGP=\$(ps -eo args | grep -E \"postgres -D $PCHOME/instances/default/db\" | grep -v grep | grep -oE '\\-p [0-9]+' | awk '{print \$2}' | head -1)
-export PAPERCLIP_COMPANY_ID=\"\$COMPANY_ID\" PAPERCLIP_PG_PORT=\"\${PGP:-$PG_PORT}\" PAPERCLIP_URL=http://127.0.0.1:3101
+export PAPERCLIP_COMPANY_ID=\"\$COMPANY_ID\" PAPERCLIP_PG_PORT=\"\${PGP:-$PG_PORT}\" PAPERCLIP_URL=http://127.0.0.1:3201
 cd $KD/adapter
 set -- $(command -v node) paperclip-gateway-adapter.js
 exec >> $KD/adapter.log 2>&1
 $SETUID"
 write_service kantor-web "#!/bin/sh
 export HOME=$DATA/home PATH=\"/usr/local/bin:/usr/bin:/bin:\$PATH\"
-export NODE_ENV=production PORT=3300 HOST=127.0.0.1 NEXT_BASE_PATH=/kantor3d NEXT_TELEMETRY_DISABLED=1
-export HERMES3D_GATEWAY_URL=ws://127.0.0.1:18790 KANTOR_ADAPTER_URL=ws://127.0.0.1:18790 UPSTREAM_ALLOWLIST=127.0.0.1,localhost
+export NEXT_PUBLIC_BRAND_NAME="$BRAND"
+export NODE_ENV=production PORT=3400 HOST=127.0.0.1 NEXT_BASE_PATH=/kantor3d NEXT_TELEMETRY_DISABLED=1
+export HERMES3D_GATEWAY_URL=ws://127.0.0.1:18792 KANTOR_ADAPTER_URL=ws://127.0.0.1:18792 UPSTREAM_ALLOWLIST=127.0.0.1,localhost
 cd $KD/Hermes3D
 set -- $(command -v node) server/index.js
 exec >> $KD/web.log 2>&1
