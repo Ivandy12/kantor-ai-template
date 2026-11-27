@@ -19,7 +19,7 @@ const { WebSocketServer } = require("ws");
 
 const PORT = parseInt(process.env.KANTOR_ADAPTER_PORT || "18790", 10);
 const COMPANY_ID = process.env.PAPERCLIP_COMPANY_ID || "f90ba27e-b4f1-4949-bece-2e8fb3500948";
-const PAPERCLIP_URL = process.env.PAPERCLIP_URL || "http://127.0.0.1:3201";
+const PAPERCLIP_URL = process.env.PAPERCLIP_URL || "http://127.0.0.1:3101";
 const PAPERCLIP_HOME = process.env.PAPERCLIP_HOME || "/opt/data/home/.paperclip";
 const PG_MODULE =
   process.env.PAPERCLIP_PG_MODULE ||

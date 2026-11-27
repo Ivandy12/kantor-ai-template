@@ -5,7 +5,7 @@
 # melapor "max_turns_exhausted" -> Paperclip melanjutkan otomatis, bukan bikin issue blocked.
 DIR=/opt/data/kantor/run-tokens
 HERMES=/opt/hermes/.venv/bin/hermes
-export PAPERCLIP_API_URL=http://127.0.0.1:3201
+export PAPERCLIP_API_URL=http://127.0.0.1:3101
 umask 077
 mkdir -p "$DIR"
 find "$DIR" -type f \( -name '*.token' -o -name '*.stop' \) -mmin +2880 -delete 2>/dev/null

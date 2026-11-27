@@ -25,10 +25,10 @@ if ! curl -s -m 5 -o /dev/null http://127.0.0.1:20128/ && [ -x /opt/data/9router
   echo "[kantor-watchdog] 9Router dinyalakan"
 fi
 # pintu depan mati -> matikan prosesnya supaya dinyalakan ulang
-if ! curl -s -m 5 -o /dev/null http://127.0.0.1:3200/api/health; then
+if ! curl -s -m 5 -o /dev/null http://127.0.0.1:3100/api/health; then
   for p in $(pgrep -f "node proxy.js"); do
     [ "$(readlink /proc/$p/cwd)" = "/opt/data/kantor3d/proxy" ] && kill -TERM "$p"
   done
-  echo "[kantor-watchdog] proxy 3200 tidak merespon, direstart"
+  echo "[kantor-watchdog] proxy 3100 tidak merespon, direstart"
 fi
 exit 0

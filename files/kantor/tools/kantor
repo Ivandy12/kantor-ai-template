@@ -20,7 +20,7 @@ try:
             cfg[k] = v.strip().strip('"').strip("'")
 except OSError:
     pass
-API = 'http://127.0.0.1:3201/api'
+API = 'http://127.0.0.1:3101/api'
 C = cfg.get('COMPANY_ID', '')
 try:
     KEY = open('/opt/data/kantor/.board.key').read().strip()
