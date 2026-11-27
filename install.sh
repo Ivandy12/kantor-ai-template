@@ -110,7 +110,7 @@ cek() {
   done
   if (exec 3<>/dev/tcp/127.0.0.1/18792) 2>/dev/null; then ok "Adapter rapat/chat jalan"; else log "⚠️  Adapter rapat/chat belum jalan"; bad=1; fi
   if [ -f "$SVC/kantor-telegram/run" ]; then
-    if pgrep -f "profiles/kantortg" >/dev/null || pgrep -f "kantortg" >/dev/null; then ok "Bot Telegram Arga jalan"; else log "⚠️  Bot Telegram Arga belum jalan"; bad=1; fi
+    if pgrep -f "profiles/kantortg" >/dev/null || pgrep -f "kantortg" >/dev/null; then ok "Bot Telegram Geto Suguru jalan"; else log "⚠️  Bot Telegram Geto Suguru belum jalan"; bad=1; fi
   fi
   return $bad
 }
@@ -287,6 +287,8 @@ for comp in proxy adapter Hermes3D; do
     ( cd "$KD/$comp" && npm ci --cache "$NPMCACHE" --no-audit --no-fund >>"$LOGF" 2>&1 ) || ( cd "$KD/$comp" && npm install --cache "$NPMCACHE" --no-audit --no-fund >>"$LOGF" 2>&1 ) || die "npm install $comp gagal, lihat $LOGF"
   fi
 done
+log "Mengompilasi Kantor 3D JJK Edition (Dojo 3D, Gojo, Geto, Zen Garden)..."
+( cd "$KD/Hermes3D" && npm run build >>"$LOGF" 2>&1 ) || log "⚠️ build Kantor 3D npm run build dilewati/fallback ke existing .next"
 find "$ROOT/files/kantor/tools" -maxdepth 1 -type f -exec cp {} "$KA/tools/" \;
 chmod +x "$KA/tools/"* 2>/dev/null || true
 cp "$ROOT/files/kantor/_shared_rules.md" "$KA/"
@@ -316,7 +318,7 @@ done
 ok "brand: $BRAND, pemilik: $SAPAAN $OWNER"
 
 # ---------------------------------------------------------------- 6. profil Hermes untuk agent
-step "6/9 Siapkan profil Hermes untuk Arga & staf"
+step "6/9 Siapkan profil Hermes untuk Geto Suguru & staf JJK"
 make_profile() { # nama, dengan_telegram(0/1)
   local P="$PROFILES/$1"; mkdir -p "$P"
   local CV; CV=$(grep -E '^_config_version:' "$DATA/config.yaml" 2>/dev/null | awk '{print $2}' | head -1)
@@ -451,16 +453,16 @@ wait_health || { tail -40 "$DATA/logs/paperclip.log" | tee -a "$LOGF"; die "Pape
 ok "service terpasang"
 
 # ---------------------------------------------------------------- 8. akun, perusahaan, Arga
-step "8/9 Bikin akun login, perusahaan & Arga"
+step "8/9 Bikin akun login (Gojo Satoru), perusahaan & CEO Geto Suguru"
 if [ -z "$INVITE_TOKEN" ]; then
   # pakai port database yang BENAR-BENAR dipakai server (bisa beda dari config kalau port bentrok)
   PGP=$(pg_port_now); PGP=${PGP:-$PG_PORT}
   INVITE_TOKEN=$(cd /tmp && HOME=$DATA/home DATABASE_URL="postgres://paperclip:paperclip@127.0.0.1:$PGP/paperclip" \
-    timeout 120 "$NPMG/bin/paperclipai" auth bootstrap-ceo -c "$PCCONF" 2>&1 | tee -a "$LOGF" | grep -ao 'pcp_bootstrap_[0-9a-f]*' | head -1 || true)
+    timeout 120 "$NPMG/bin/paperclipai" auth bootstrap-ceo --force -c "$PCCONF" 2>&1 | tee -a "$LOGF" | grep -ao 'pcp_bootstrap_[0-9a-f]*' | head -1 || true)
   [ -n "$INVITE_TOKEN" ] && log "undangan admin pertama dibuat" || log "admin sudah ada, undangan tidak diperlukan"
 fi
 PGX=$(pg_port_now); PGX=${PGX:-$PG_PORT}
-SETUP_OUT=$(cd "$ROOT/lib" && PC_URL=http://127.0.0.1:3101 PUBLIC_URL="$PUBLIC_URL" KA="$KA" PAPERCLIP_HOME="$PCHOME" \
+SETUP_OUT=$(cd "$ROOT/lib" && PC_URL=http://127.0.0.1:3201 PUBLIC_URL="$PUBLIC_URL" KA="$KA" PAPERCLIP_HOME="$PCHOME" \
   OWNER_EMAIL="$OWNER_EMAIL" OWNER_PASSWORD="$OWNER_PASSWORD" OWNER_NAME="$OWNER" BRAND="$BRAND" \
   INVITE_TOKEN="$INVITE_TOKEN" MODEL="$MODEL" PG_PORT="$PGX" \
   PG_MODULE="$NPMG/lib/node_modules/paperclipai/node_modules/pg" node setup.js 2>>"$LOGF") || die "setup akun/Arga gagal, lihat $LOGF"
@@ -469,7 +471,7 @@ perl -pi -e "s/^COMPANY_ID=.*/COMPANY_ID=\"$COMPANY_ID\"/" "$CONF"
 [ "$USE_S6" = 1 ] || "$KA/tools/kantor-svc" start all
 restart_svc kantor-adapter
 [ -n "$TG_TOKEN" ] && restart_svc kantor-telegram
-ok "akun owner, perusahaan $BRAND, dan Arga siap"
+ok "akun owner (Gojo Satoru), perusahaan $BRAND, dan CEO Geto Suguru siap"
 
 # ---------------------------------------------------------------- 9. cek akhir
 step "9/9 Pasang penjaga otomatis & cek akhir"
@@ -493,8 +495,8 @@ echo " 🎉 KANTOR AI SIAP"
 echo "  Link kantor : $PUBLIC_URL"
 echo "  Kantor 3D   : $PUBLIC_URL/kantor3d"
 echo "  Login       : ${OWNER_EMAIL:-(email yang dipakai saat install)}"
-echo "  CEO         : Arga (model $MODEL)"
-[ -n "$TG_TOKEN" ] && echo "  Telegram    : chat bot kamu untuk ngobrol dengan Arga (@Nama untuk agent tertentu)"
+echo "  CEO         : Geto Suguru (model $MODEL), Bos: Gojo Satoru"
+[ -n "$TG_TOKEN" ] && echo "  Telegram    : chat bot kamu untuk ngobrol dengan Geto Suguru (@Nama untuk agent tertentu)"
 echo "  Versi       : $TPL_VERSION"
 echo "=============================================================="
 } | tee -a "$LOGF"

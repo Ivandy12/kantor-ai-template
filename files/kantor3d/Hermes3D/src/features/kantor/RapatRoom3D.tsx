@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 // Claude ruang-rapat (30 Okt 2026): meja rapat besar + layar presentasi, ukuran mengikuti item (w/h) persis,
 // jadi yang kelihatan = yang diblok nav-grid (beda dengan table.glb yang ukurannya tetap).
@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { SCALE } from "@/features/retro-office/core/constants";
 import { toWorld } from "@/features/retro-office/core/geometry";
 import type { FurnitureItem } from "@/features/retro-office/core/types";
+import { getBrandName } from "@/features/kantor/brand";
 
 const TOP_Y = 0.74; // tinggi meja kerja (DESK_TOP_Y vendor × ROVING_SCALE)
 
@@ -22,7 +23,7 @@ function screenTexture(): THREE.CanvasTexture | null {
   g.fillStyle = "#fbbf24"; g.font = "bold 44px sans-serif"; g.textAlign = "center";
   g.fillText("RAPAT TIM", 256, 105);
   g.fillStyle = "#e2e8f0"; g.font = "28px sans-serif";
-  g.fillText("Digital Strategi", 256, 155);
+  g.fillText(getBrandName(), 256, 155);
   g.fillStyle = "#38bdf8"; g.fillRect(96, 185, 320, 8);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;

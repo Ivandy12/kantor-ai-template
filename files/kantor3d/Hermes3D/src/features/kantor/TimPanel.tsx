@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { kantorCall, type KantorAgent } from "@/features/kantor/kantorApi";
+import { getBrandName } from "@/features/kantor/brand";
 
 type Issue = {
   id: string;
@@ -79,7 +80,7 @@ export function TimPanel({ open, onClose, agents }: { open: boolean; onClose: ()
       <div className="flex h-full w-full max-w-[880px] flex-col border-l border-violet-500/30 bg-[#0D0A14]/95 text-[#F1EEF9] shadow-2xl backdrop-blur">
         <header className="flex items-center justify-between gap-3 border-b border-[#2D2548] px-5 py-4">
           <div>
-            <div className="text-xs font-bold uppercase tracking-wider text-violet-300">Digital Strategi</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-violet-300">{getBrandName()}</div>
             <h2 className="text-xl font-extrabold">Tim & tugas</h2>
           </div>
           <button type="button" onClick={onClose} className="rounded-lg bg-[#201936] px-3 py-2 text-sm font-semibold">

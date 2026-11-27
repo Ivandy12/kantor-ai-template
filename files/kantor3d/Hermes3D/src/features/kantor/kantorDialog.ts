@@ -1,4 +1,4 @@
-// Client helper untuk memanggil method adapter kantor.scene.dialog (Brief Tahap 4: D5 & E)
+﻿// Client helper untuk memanggil method adapter kantor.scene.dialog (Brief Tahap 4: D5 & E)
 import { kantorCall } from "./kantorApi";
 
 export type DialogLine = {
@@ -62,23 +62,23 @@ export async function fetchSceneDialog(params: {
 
   if (params.kind === "brief_bos") {
     fallbackLines.push(
-      { speakerId: params.fromId, name: params.fromName, text: `Arga, tolong jalankan tugas: ${shortTitle}` },
-      { speakerId: params.toId, name: params.toName, text: `Baik Pak Fauzy, segera saya delegasikan ke divisi terkait.` }
+      { speakerId: params.fromId, name: params.fromName, text: `Geto, tolong jalankan tugas: ${shortTitle}` },
+      { speakerId: params.toId, name: params.toName, text: `Baik Sensei Gojo, segera saya delegasikan ke divisi terkait.` }
     );
   } else if (params.kind === "brief") {
     fallbackLines.push(
       { speakerId: params.fromId, name: params.fromName, text: `${params.toName}, ini ada arahan baru: ${shortTitle}` },
-      { speakerId: params.toId, name: params.toName, text: `Siap Mas Arga, langsung kami kerjakan sekarang!` }
+      { speakerId: params.toId, name: params.toName, text: `Siap Geto-san, langsung kami kerjakan sekarang!` }
     );
   } else if (params.kind === "lapor") {
     fallbackLines.push(
-      { speakerId: params.fromId, name: params.fromName, text: `Mas Arga, tugas ${shortTitle} sudah tuntas 100%!` },
-      { speakerId: params.toId, name: params.toName, text: `Mantap, terima kasih kerja kerasnya! Saya teruskan ke Pak Fauzy.` }
+      { speakerId: params.fromId, name: params.fromName, text: `Geto-san, tugas ${shortTitle} sudah tuntas 100%!` },
+      { speakerId: params.toId, name: params.toName, text: `Mantap, terima kasih kerja kerasnya! Saya teruskan ke Sensei Gojo.` }
     );
   } else if (params.kind === "lapor_bos") {
     fallbackLines.push(
-      { speakerId: params.fromId, name: params.fromName, text: `Lapor Pak Fauzy, tugas ${shortTitle} selesai dengan hasil optimal.` },
-      { speakerId: params.toId, name: params.toName, text: `Bagus sekali Arga, kerja tim luar biasa 👍` }
+      { speakerId: params.fromId, name: params.fromName, text: `Lapor Sensei Gojo, tugas ${shortTitle} selesai dengan hasil optimal.` },
+      { speakerId: params.toId, name: params.toName, text: `Bagus sekali Geto, kerja tim luar biasa 👍` }
     );
   }
 

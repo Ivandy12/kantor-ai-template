@@ -1,4 +1,4 @@
-// Kantor AI: Sistem Koreografi Kantor Hidup (Brief Tahap 4: E1-E7 & D1-D5)
+﻿// Kantor AI: Sistem Koreografi Kantor Hidup (Brief Tahap 4: E1-E7 & D1-D5)
 import { BOSS_AGENT_ID, BOSS_NAME } from "./kantorAvatars";
 import { fetchSceneDialog, type DialogLine } from "./kantorDialog";
 
@@ -219,8 +219,8 @@ export class KantorChoreographyManager {
     const title = params.taskTitle.slice(0, 50);
     const guestChairPos = { x: 505, y: 215 };
     const lines = params.dialogLines || [
-      { speakerId: BOSS_AGENT_ID, name: BOSS_NAME, text: `Arga, tolong jalankan tugas: ${title}` },
-      { speakerId: params.argaId, name: "Arga", text: `Baik Pak Fauzy, segera saya delegasikan ke divisi terkait.` },
+      { speakerId: BOSS_AGENT_ID, name: BOSS_NAME, text: `Geto, tolong jalankan tugas: ${title}` },
+      { speakerId: params.argaId, name: "Geto Suguru", text: `Baik Sensei Gojo, segera saya delegasikan ke divisi terkait.` },
     ];
 
     return {
@@ -254,7 +254,7 @@ export class KantorChoreographyManager {
         {
           actorId: params.argaId,
           type: "talk",
-          bubbleText: lines[1]?.text || `Siap Pak Fauzy!`,
+          bubbleText: lines[1]?.text || `Siap Sensei Gojo!`,
           bubbleDurationMs: 3500,
           durationMs: 2500,
         },
@@ -287,8 +287,8 @@ export class KantorChoreographyManager {
     const title = params.taskTitle.slice(0, 50);
     const ceoGuestPos = { x: 305, y: 215 };
     const lines = params.dialogLines || [
-      { speakerId: params.argaId, name: "Arga", text: `${params.targetAgentName}, tolong fokus kerjakan: ${title}` },
-      { speakerId: params.targetAgentId, name: params.targetAgentName, text: `Siap Mas Arga, langsung kami kerjakan sekarang!` },
+      { speakerId: params.argaId, name: "Geto Suguru", text: `${params.targetAgentName}, tolong fokus kerjakan: ${title}` },
+      { speakerId: params.targetAgentId, name: params.targetAgentName, text: `Siap Geto-san, langsung kami kerjakan sekarang!` },
     ];
 
     return {
@@ -322,7 +322,7 @@ export class KantorChoreographyManager {
         {
           actorId: params.targetAgentId,
           type: "talk",
-          bubbleText: lines[1]?.text || `Siap Mas Arga!`,
+          bubbleText: lines[1]?.text || `Siap Geto-san!`,
           bubbleDurationMs: 3500,
           durationMs: 2500,
         },
@@ -355,8 +355,8 @@ export class KantorChoreographyManager {
     const title = params.taskTitle.slice(0, 50);
     const ceoGuestPos = { x: 305, y: 215 };
     const lines = params.dialogLines || [
-      { speakerId: params.targetAgentId, name: params.targetAgentName, text: `Mas Arga, tugas ${title} sudah tuntas 100%!` },
-      { speakerId: params.argaId, name: "Arga", text: `Mantap, terima kasih ${params.targetAgentName}! Saya laporkan ke Pak Fauzy.` },
+      { speakerId: params.targetAgentId, name: params.targetAgentName, text: `Geto-san, tugas ${title} sudah tuntas 100%!` },
+      { speakerId: params.argaId, name: "Geto Suguru", text: `Mantap, terima kasih ${params.targetAgentName}! Saya laporkan ke Sensei Gojo.` },
     ];
 
     return {
@@ -383,7 +383,7 @@ export class KantorChoreographyManager {
         {
           actorId: params.targetAgentId,
           type: "talk",
-          bubbleText: lines[0]?.text || `Mas Arga, tugas sudah beres 100%!`,
+          bubbleText: lines[0]?.text || `Geto-san, tugas sudah beres 100%!`,
           bubbleDurationMs: 4000,
           durationMs: 3000,
         },
@@ -421,8 +421,8 @@ export class KantorChoreographyManager {
     const title = params.taskTitle.slice(0, 50);
     const guestChairPos = { x: 505, y: 215 };
     const lines = params.dialogLines || [
-      { speakerId: params.argaId, name: "Arga", text: `Lapor Pak Fauzy, tugas ${title} selesai dengan hasil optimal.` },
-      { speakerId: BOSS_AGENT_ID, name: BOSS_NAME, text: `Bagus sekali Arga, kerja tim luar biasa 👍` },
+      { speakerId: params.argaId, name: "Geto Suguru", text: `Lapor Sensei Gojo, tugas ${title} selesai dengan hasil optimal.` },
+      { speakerId: BOSS_AGENT_ID, name: BOSS_NAME, text: `Bagus sekali Geto, kerja tim luar biasa 👍` },
     ];
 
     return {
@@ -456,7 +456,7 @@ export class KantorChoreographyManager {
         {
           actorId: BOSS_AGENT_ID,
           type: "clap",
-          bubbleText: lines[1]?.text || `Bagus Arga, kerja tim luar biasa 👍`,
+          bubbleText: lines[1]?.text || `Bagus Geto, kerja tim luar biasa 👍`,
           bubbleDurationMs: 4500,
           durationMs: 3500,
         },
@@ -485,7 +485,7 @@ export class KantorChoreographyManager {
     assistantReply?: string;
   }): ChoreographyScene {
     const msg = cleanReplyText(params.userMessage, 80);
-    const reply = cleanReplyText(params.assistantReply || "Siap Pak Fauzy! ROAS saat ini 3.8x, semua campaign stabil.", 120);
+    const reply = cleanReplyText(params.assistantReply || "Siap Sensei Gojo! ROAS saat ini 3.8x, semua campaign stabil.", 120);
     return {
       id: `chat-${Date.now()}`,
       type: "A",

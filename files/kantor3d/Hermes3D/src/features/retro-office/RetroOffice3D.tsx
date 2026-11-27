@@ -1,17 +1,15 @@
-"use client";
+﻿"use client";
 
 // T8: Room Nav & Delegasi - Preset Ruangan untuk Kamera Terbang
 const KANTOR_ROOM_PRESETS = [
-  { id: "overview", label: "🏢 Semua", pos: [-3.5, 8.0, 4.5] as [number, number, number], target: [0, 0, 0] as [number, number, number], zoom: 60 },
-  { id: "boss", label: "👑 Boss Cabin", pos: [-16.46, 7.5, -9.81] as [number, number, number], target: [-12.96, 0, -14.31] as [number, number, number], zoom: 125 },
-  { id: "ceo", label: "👔 Ruang CEO", pos: [-10.34, 7.5, -9.81] as [number, number, number], target: [-6.84, 0, -14.31] as [number, number, number], zoom: 125 },
+  { id: "overview", label: "⛩️ Semua (Dojo)", pos: [-3.5, 8.0, 4.5] as [number, number, number], target: [0, 0, 0] as [number, number, number], zoom: 60 },
+  { id: "boss", label: "👑 Boss Gojo", pos: [-16.46, 7.5, -9.81] as [number, number, number], target: [-12.96, 0, -14.31] as [number, number, number], zoom: 125 },
+  { id: "ceo", label: "👔 CEO Geto", pos: [-10.34, 7.5, -9.81] as [number, number, number], target: [-6.84, 0, -14.31] as [number, number, number], zoom: 125 },
   { id: "meeting", label: "🤝 Ruang Rapat", pos: [-3.5, 7.5, -9.63] as [number, number, number], target: [0.0, 0, -14.13] as [number, number, number], zoom: 120 },
-  { id: "meta", label: "📊 Meta Ads", pos: [-15.92, 7.5, -4.68] as [number, number, number], target: [-12.42, 0, -9.18] as [number, number, number], zoom: 100 },
-  { id: "kreatif", label: "🎨 Kreatif", pos: [-8.99, 7.5, -4.68] as [number, number, number], target: [-5.49, 0, -9.18] as [number, number, number], zoom: 100 },
-  { id: "tech", label: "💻 Tech & Ops", pos: [-2.96, 7.5, -4.68] as [number, number, number], target: [0.54, 0, -9.18] as [number, number, number], zoom: 100 },
-  { id: "lounge", label: "🛋️ Lounge", pos: [-11.06, 7.5, -0.18] as [number, number, number], target: [-7.56, 0, -4.68] as [number, number, number], zoom: 105 },
-  { id: "pantry", label: "☕ Pantry", pos: [-3.5, 7.5, -0.18] as [number, number, number], target: [0.0, 0, -4.68] as [number, number, number], zoom: 105 },
-  { id: "reception", label: "🛎️ Resepsionis", pos: [-17.0, 7.5, -0.18] as [number, number, number], target: [-13.5, 0, -4.68] as [number, number, number], zoom: 105 },
+  { id: "courtyard", label: "🌸 Taman Zen & Koi", pos: [-6.5, 7.5, -4.68] as [number, number, number], target: [-3.5, 0, -7.0] as [number, number, number], zoom: 110 },
+  { id: "tech", label: "💻 Cyber Tech Lab", pos: [-2.96, 7.5, -4.68] as [number, number, number], target: [0.54, 0, -9.18] as [number, number, number], zoom: 100 },
+  { id: "game", label: "🎱 Game & Gym", pos: [-15.92, 7.5, -0.18] as [number, number, number], target: [-12.42, 0, -4.68] as [number, number, number], zoom: 105 },
+  { id: "gate", label: "⛩️ Gerbang & Prasasti", pos: [-3.5, 7.5, 4.0] as [number, number, number], target: [0.0, 0, 0.0] as [number, number, number], zoom: 105 },
 ];
 
 
@@ -200,12 +198,21 @@ import {
   isDeskClutter,
 } from "@/features/retro-office/objects/roving";
 import { applyKantorLayout, autoAssignDesks, buildMeetingRoomItems, getRapatHeads, getRapatSideSeats } from "@/features/kantor/kantorLayout";
-import { RapatRoomItem } from "@/features/kantor/RapatRoom3D"; // Claude ruang-rapat
+import { RapatRoomItem } from "@/features/kantor/RapatRoom3D";
+import {
+  CompanyStoneItem,
+  KoiPondItem,
+  ZenBridgeItem,
+  SakuraTreeItem,
+  CyberServerRackItem,
+  BilliardTableItem,
+  PingPongTableItem,
+} from "@/features/kantor/JujutsuDojo3D";
 import { RapatPanel } from "@/features/kantor/RapatPanel"; // Claude rapat-ai
 import { UsulHapusCard } from "@/features/kantor/UsulHapusCard"; // Claude hapus-agent
 import { startBranding } from "@/features/kantor/brand"; // Claude branding
 import { useKantorOverview } from "@/features/kantor/useKantorOverview";
-import { BOSS_AGENT_ID, BOSS_NAME } from "@/features/kantor/kantorAvatars";
+import { BOSS_AGENT_ID, BOSS_NAME, CEO_AGENT_ID, CEO_NAME } from "@/features/kantor/kantorAvatars";
 import { smoothPath, slerpAngle } from "@/features/retro-office/core/smoothPath";
 import { globalChoreographyManager, cleanReplyText } from "@/features/kantor/kantorChoreography";
 import { globalKantorIdleManager, isNearSeat } from "@/features/kantor/kantorIdle";

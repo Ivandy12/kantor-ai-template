@@ -1,53 +1,381 @@
-// Kantor AI: Mapping karakter & animasi Rocketbox sesuai gender (T9b, T11)
+// Kantor AI: Jujutsu Kaisen Edition — Agent Collectibles & Avatar Mapping
+// Pimpinan: Gojo Satoru (Bos) & Geto Suguru (CEO)
+// 20 Karakter Jujutsu Kaisen terbagi dalam 4 Divisi
 
 export const BOSS_AGENT_ID = "__boss__";
-export const BOSS_NAME = "Pak Fauzy";
-export const BOSS_TITLE = "Pak Fauzy · Bos";
+export const BOSS_NAME = "Gojo Satoru";
+export const BOSS_TITLE = "Gojo Satoru · Bos";
+export const CEO_AGENT_ID = "__ceo__";
+export const CEO_NAME = "Geto Suguru";
+export const CEO_TITLE = "Geto Suguru · CEO";
 
 export type Gender = "m" | "f";
 
 export type AvatarConfig = {
   avatarName: string;
   gender: Gender;
+  characterName: string;
+  roleTitle: string;
+  division: "Pimpinan" | "Penjualan & Layanan" | "Pemasaran" | "Keuangan" | "Operasional & Admin";
 };
 
 /**
- * Mapping eksplisit nama / ID agent ke model avatar Rocketbox & gender.
- * Aturan T9b:
- * - Pak Fauzy (user/bos) -> Business_Male_01 (jas hitam dasi merah)
- * - Arga (CEO) -> Business_Male_05 (jas kotak dasi ungu)
- * - Bima (Head Meta Ads) -> Business_Male_03
- * - Agent wanita: AM Maikha, Laras, Rani, Sekar -> Business_Female_01..04
- * - Sisanya pria: AM Fauzy, AM Edio, AM Nurrahman, AM Zacky, Bayu, Dimas, Gatot, Radit, Raka -> Business_Male_*, Male_Adult_*
- * Pak Fauzy, Arga, Bima TIDAK boleh dobel dengan agent mana pun.
+ * 20 Figur Resmi Jujutsu Kaisen Agent Collectibles
  */
-export const AGENT_AVATAR_MAP: Record<string, AvatarConfig> = {
-  // Boss
-  [BOSS_AGENT_ID]: { avatarName: "Business_Male_01", gender: "m" },
-  "pak fauzy": { avatarName: "Business_Male_01", gender: "m" },
-  fauzy_boss: { avatarName: "Business_Male_01", gender: "m" },
+export const JJK_ROSTER: Record<string, AvatarConfig> = {
+  // --- PIMPINAN ---
+  [BOSS_AGENT_ID]: {
+    avatarName: "Business_Male_01",
+    gender: "m",
+    characterName: "Gojo Satoru",
+    roleTitle: "Bos",
+    division: "Pimpinan",
+  },
+  "gojo satoru": {
+    avatarName: "Business_Male_01",
+    gender: "m",
+    characterName: "Gojo Satoru",
+    roleTitle: "Bos",
+    division: "Pimpinan",
+  },
+  gojo: {
+    avatarName: "Business_Male_01",
+    gender: "m",
+    characterName: "Gojo Satoru",
+    roleTitle: "Bos",
+    division: "Pimpinan",
+  },
 
-  // Pimpinan & Head
-  arga: { avatarName: "Business_Male_05", gender: "m" },
-  bima: { avatarName: "Business_Male_03", gender: "m" },
+  [CEO_AGENT_ID]: {
+    avatarName: "Business_Male_05",
+    gender: "m",
+    characterName: "Geto Suguru",
+    roleTitle: "CEO",
+    division: "Pimpinan",
+  },
+  "geto suguru": {
+    avatarName: "Business_Male_05",
+    gender: "m",
+    characterName: "Geto Suguru",
+    roleTitle: "CEO",
+    division: "Pimpinan",
+  },
+  geto: {
+    avatarName: "Business_Male_05",
+    gender: "m",
+    characterName: "Geto Suguru",
+    roleTitle: "CEO",
+    division: "Pimpinan",
+  },
+  // Backward compatibility alias jika masih ada instance lama
+  arga: {
+    avatarName: "Business_Male_05",
+    gender: "m",
+    characterName: "Geto Suguru",
+    roleTitle: "CEO",
+    division: "Pimpinan",
+  },
 
-  // Tim Meta Ads
-  "am fauzy": { avatarName: "Business_Male_02", gender: "m" },
-  "am edio": { avatarName: "Business_Male_04", gender: "m" },
-  "am maikha": { avatarName: "Business_Female_01", gender: "f" },
-  "am nurrahman": { avatarName: "Business_Male_06", gender: "m" },
-  "am zacky": { avatarName: "Business_Male_07", gender: "m" },
+  // --- PENJUALAN & LAYANAN ---
+  "yuta okkotsu": {
+    avatarName: "Male_Adult_01",
+    gender: "m",
+    characterName: "Yuta Okkotsu",
+    roleTitle: "CS & Sales",
+    division: "Penjualan & Layanan",
+  },
+  yuta: {
+    avatarName: "Male_Adult_01",
+    gender: "m",
+    characterName: "Yuta Okkotsu",
+    roleTitle: "CS & Sales",
+    division: "Penjualan & Layanan",
+  },
+  ijichi: {
+    avatarName: "Business_Male_02",
+    gender: "m",
+    characterName: "Ijichi",
+    roleTitle: "Booking & Jadwal",
+    division: "Penjualan & Layanan",
+  },
+  "yuji itadori": {
+    avatarName: "Male_Adult_02",
+    gender: "m",
+    characterName: "Yuji Itadori",
+    roleTitle: "Reaktivasi Pelanggan",
+    division: "Penjualan & Layanan",
+  },
+  yuji: {
+    avatarName: "Male_Adult_02",
+    gender: "m",
+    characterName: "Yuji Itadori",
+    roleTitle: "Reaktivasi Pelanggan",
+    division: "Penjualan & Layanan",
+  },
+  itadori: {
+    avatarName: "Male_Adult_02",
+    gender: "m",
+    characterName: "Yuji Itadori",
+    roleTitle: "Reaktivasi Pelanggan",
+    division: "Penjualan & Layanan",
+  },
+  "nobara kugisaki": {
+    avatarName: "Business_Female_01",
+    gender: "f",
+    characterName: "Nobara Kugisaki",
+    roleTitle: "Ulasan & Reputasi",
+    division: "Penjualan & Layanan",
+  },
+  nobara: {
+    avatarName: "Business_Female_01",
+    gender: "f",
+    characterName: "Nobara Kugisaki",
+    roleTitle: "Ulasan & Reputasi",
+    division: "Penjualan & Layanan",
+  },
+  "nanami kento": {
+    avatarName: "Business_Male_03",
+    gender: "m",
+    characterName: "Nanami Kento",
+    roleTitle: "Penawaran Harga",
+    division: "Penjualan & Layanan",
+  },
+  nanami: {
+    avatarName: "Business_Male_03",
+    gender: "m",
+    characterName: "Nanami Kento",
+    roleTitle: "Penawaran Harga",
+    division: "Penjualan & Layanan",
+  },
 
-  // Tim Operasional & Kreatif
-  bayu: { avatarName: "Male_Adult_01", gender: "m" },
-  gatot: { avatarName: "Male_Adult_02", gender: "m" },
-  dimas: { avatarName: "Male_Adult_03", gender: "m" },
-  laras: { avatarName: "Business_Female_02", gender: "f" },
-  rani: { avatarName: "Business_Female_03", gender: "f" },
-  sekar: { avatarName: "Business_Female_04", gender: "f" },
-  radit: { avatarName: "Business_Male_02", gender: "m" },
-  raka: { avatarName: "Business_Male_04", gender: "m" },
+  // --- PEMASARAN ---
+  "todo aoi": {
+    avatarName: "Male_Adult_03",
+    gender: "m",
+    characterName: "Todo Aoi",
+    roleTitle: "Konten Sosmed",
+    division: "Pemasaran",
+  },
+  todo: {
+    avatarName: "Male_Adult_03",
+    gender: "m",
+    characterName: "Todo Aoi",
+    roleTitle: "Konten Sosmed",
+    division: "Pemasaran",
+  },
+  "hakari kinji": {
+    avatarName: "Business_Male_04",
+    gender: "m",
+    characterName: "Hakari Kinji",
+    roleTitle: "Meta Ads",
+    division: "Pemasaran",
+  },
+  hakari: {
+    avatarName: "Business_Male_04",
+    gender: "m",
+    characterName: "Hakari Kinji",
+    roleTitle: "Meta Ads",
+    division: "Pemasaran",
+  },
+  panda: {
+    avatarName: "Business_Male_07",
+    gender: "m",
+    characterName: "Panda",
+    roleTitle: "Video Pendek",
+    division: "Pemasaran",
+  },
+  "inumaki toge": {
+    avatarName: "Male_Adult_01",
+    gender: "m",
+    characterName: "Inumaki Toge",
+    roleTitle: "Email & Newsletter",
+    division: "Pemasaran",
+  },
+  inumaki: {
+    avatarName: "Male_Adult_01",
+    gender: "m",
+    characterName: "Inumaki Toge",
+    roleTitle: "Email & Newsletter",
+    division: "Pemasaran",
+  },
+  "megumi fushiguro": {
+    avatarName: "Business_Male_06",
+    gender: "m",
+    characterName: "Megumi Fushiguro",
+    roleTitle: "SEO / AIO / GEO / AEO",
+    division: "Pemasaran",
+  },
+  megumi: {
+    avatarName: "Business_Male_06",
+    gender: "m",
+    characterName: "Megumi Fushiguro",
+    roleTitle: "SEO / AIO / GEO / AEO",
+    division: "Pemasaran",
+  },
+  fushiguro: {
+    avatarName: "Business_Male_06",
+    gender: "m",
+    characterName: "Megumi Fushiguro",
+    roleTitle: "SEO / AIO / GEO / AEO",
+    division: "Pemasaran",
+  },
+
+  // --- KEUANGAN ---
+  "maki zenin": {
+    avatarName: "Business_Female_02",
+    gender: "f",
+    characterName: "Maki Zenin",
+    roleTitle: "Penagihan",
+    division: "Keuangan",
+  },
+  maki: {
+    avatarName: "Business_Female_02",
+    gender: "f",
+    characterName: "Maki Zenin",
+    roleTitle: "Penagihan",
+    division: "Keuangan",
+  },
+  "mei mei": {
+    avatarName: "Female_Adult_01",
+    gender: "f",
+    characterName: "Mei Mei",
+    roleTitle: "Settlement F&B",
+    division: "Keuangan",
+  },
+  meimei: {
+    avatarName: "Female_Adult_01",
+    gender: "f",
+    characterName: "Mei Mei",
+    roleTitle: "Settlement F&B",
+    division: "Keuangan",
+  },
+  "yuki tsukumo": {
+    avatarName: "Female_Adult_02",
+    gender: "f",
+    characterName: "Yuki Tsukumo",
+    roleTitle: "Laporan Pemilik",
+    division: "Keuangan",
+  },
+  yuki: {
+    avatarName: "Female_Adult_02",
+    gender: "f",
+    characterName: "Yuki Tsukumo",
+    roleTitle: "Laporan Pemilik",
+    division: "Keuangan",
+  },
+  "utahime iori": {
+    avatarName: "Business_Female_03",
+    gender: "f",
+    characterName: "Utahime Iori",
+    roleTitle: "Pajak",
+    division: "Keuangan",
+  },
+  utahime: {
+    avatarName: "Business_Female_03",
+    gender: "f",
+    characterName: "Utahime Iori",
+    roleTitle: "Pajak",
+    division: "Keuangan",
+  },
+  "yaga masamichi": {
+    avatarName: "Business_Male_05",
+    gender: "m",
+    characterName: "Yaga Masamichi",
+    roleTitle: "Akuntansi",
+    division: "Keuangan",
+  },
+  yaga: {
+    avatarName: "Business_Male_05",
+    gender: "m",
+    characterName: "Yaga Masamichi",
+    roleTitle: "Akuntansi",
+    division: "Keuangan",
+  },
+
+  // --- OPERASIONAL & ADMIN ---
+  "shoko ieiri": {
+    avatarName: "Business_Female_04",
+    gender: "f",
+    characterName: "Shoko Ieiri",
+    roleTitle: "Cek Bukti Bayar",
+    division: "Operasional & Admin",
+  },
+  shoko: {
+    avatarName: "Business_Female_04",
+    gender: "f",
+    characterName: "Shoko Ieiri",
+    roleTitle: "Cek Bukti Bayar",
+    division: "Operasional & Admin",
+  },
+  choso: {
+    avatarName: "Male_Adult_02",
+    gender: "m",
+    characterName: "Choso",
+    roleTitle: "Komentar & DM",
+    division: "Operasional & Admin",
+  },
+  "mai zenin": {
+    avatarName: "Business_Female_01",
+    gender: "f",
+    characterName: "Mai Zenin",
+    roleTitle: "Admin Pesanan",
+    division: "Operasional & Admin",
+  },
+  mai: {
+    avatarName: "Business_Female_01",
+    gender: "f",
+    characterName: "Mai Zenin",
+    roleTitle: "Admin Pesanan",
+    division: "Operasional & Admin",
+  },
+  "higuruma hiromi": {
+    avatarName: "Business_Male_02",
+    gender: "m",
+    characterName: "Higuruma Hiromi",
+    roleTitle: "Dokumen & Kontrak",
+    division: "Operasional & Admin",
+  },
+  higuruma: {
+    avatarName: "Business_Male_02",
+    gender: "m",
+    characterName: "Higuruma Hiromi",
+    roleTitle: "Dokumen & Kontrak",
+    division: "Operasional & Admin",
+  },
+  tengen: {
+    avatarName: "Female_Adult_01",
+    gender: "f",
+    characterName: "Tengen",
+    roleTitle: "Keamanan Web",
+    division: "Operasional & Admin",
+  },
 };
+
+/**
+ * Daftar karakter Jujutsu Kaisen untuk rekrutmen karyawan baru secara acak
+ */
+export const RECRUITABLE_JJK_CHARACTERS = [
+  "Yuta Okkotsu",
+  "Ijichi",
+  "Yuji Itadori",
+  "Nobara Kugisaki",
+  "Nanami Kento",
+  "Todo Aoi",
+  "Hakari Kinji",
+  "Panda",
+  "Inumaki Toge",
+  "Megumi Fushiguro",
+  "Maki Zenin",
+  "Mei Mei",
+  "Yuki Tsukumo",
+  "Utahime Iori",
+  "Yaga Masamichi",
+  "Shoko Ieiri",
+  "Choso",
+  "Mai Zenin",
+  "Higuruma Hiromi",
+  "Tengen",
+];
 
 export const ALL_AVATARS = [
   "Business_Female_01",
@@ -68,63 +396,53 @@ export const ALL_AVATARS = [
   "Male_Adult_03",
 ] as const;
 
-// Claude v1.3: deteksi gender dari nama (kata utuh), supaya agent baru bernama perempuan dapat karakter perempuan
-const FEMALE_NAMES = new Set([
-  "maya", "sora", "laras", "rani", "sekar", "maikha", "putri", "siti", "ayu", "dewi", "sari", "rina", "rini", "nina",
-  "tia", "dina", "lina", "wulan", "indah", "citra", "nadia", "nisa", "anisa", "annisa", "salsa", "salsabila", "bella",
-  "intan", "fitri", "fitria", "aulia", "kirana", "alya", "zahra", "nabila", "aisyah", "aisha", "sinta", "shinta", "tari",
-  "lestari", "ratna", "yuni", "vina", "mega", "tasya", "kezia", "gita", "ani", "ana", "anna", "eka", "lia", "lili",
-  "mira", "mila", "nia", "novi", "novita", "oktavia", "puspita", "rara", "risa", "riska", "rizka", "santi", "shinta",
-  "suci", "tiara", "tika", "vira", "widya", "yanti", "yulia", "zara", "amelia", "amel", "angel", "anggun", "astrid",
-  "bunga", "cantika", "dara", "dita", "elsa", "farah", "febi", "hana", "hani", "ika", "ira", "jessica", "julia",
-  "kartika", "keisha", "kinan", "laila", "layla", "luna", "melati", "mutiara", "naya", "nayla", "olivia", "pevita",
-  "qonita", "raisa", "rania", "reni", "sasha", "sekarayu", "sofia", "sophia", "tanya", "ulfa", "vania", "winda",
-  "yasmin", "zalfa", "clara", "diana", "erika", "felicia", "grace", "helena", "karina", "kayla", "lisa", "lucy",
-  "maria", "michelle", "nadya", "sarah", "sara", "stella", "vanessa", "dinda", "devi", "desi", "fani", "fanny",
-  "rosa", "rose", "aurel", "ayla", "kiara", "sabrina", "alisha", "cinta", "dian", "ratih", "wati", "ningsih",
-]);
-const FEMALE_WORDS = /\b(wanita|perempuan|female|ibu|bu|mbak|nona)\b/i;
-
-export function guessGender(name: string): Gender {
-  const n = (name || "").toLowerCase();
-  if (FEMALE_WORDS.test(n)) return "f";
-  const words = n.replace(/[^a-z\s]/g, " ").split(/\s+/).filter((w) => w && !["am", "pak", "mas", "bang", "ceo", "head", "agent"].includes(w));
-  return words.some((w) => FEMALE_NAMES.has(w)) ? "f" : "m";
+export function getRandomJJKCharacter(excludeNames: string[] = []): { name: string; title: string; division: string } {
+  const available = RECRUITABLE_JJK_CHARACTERS.filter((c) => !excludeNames.includes(c));
+  const pick = available.length > 0
+    ? available[Math.floor(Math.random() * available.length)]
+    : RECRUITABLE_JJK_CHARACTERS[Math.floor(Math.random() * RECRUITABLE_JJK_CHARACTERS.length)];
+  const cfg = JJK_ROSTER[pick.toLowerCase()];
+  return {
+    name: cfg?.characterName || pick,
+    title: cfg?.roleTitle || "Staff Jujutsu",
+    division: cfg?.division || "Operasional & Admin",
+  };
 }
 
 export function getAvatarInfo(agentId: string, name?: string): AvatarConfig & { avatarUrl: string } {
   const normId = (agentId || "").toLowerCase().trim();
   const normName = (name || "").toLowerCase().trim();
 
-  // 1. Cek langsung map
-  let found = AGENT_AVATAR_MAP[normId] || (normName ? AGENT_AVATAR_MAP[normName] : undefined);
+  // 1. Cek langsung map roster Jujutsu Kaisen
+  let found = JJK_ROSTER[normId] || (normName ? JJK_ROSTER[normName] : undefined);
 
-  // 2. Cek nama per kata utuh (dulu substring: "margareta" bisa kena "arga")
+  // 2. Cek apakah ada nama karakter Jujutsu Kaisen di dalam nama agent
   if (!found && normName) {
-    const padded = ` ${normName.replace(/[^a-z0-9]+/g, " ")} `;
-    for (const [key, conf] of Object.entries(AGENT_AVATAR_MAP)) {
-      if (padded.includes(` ${key} `)) {
+    for (const [key, conf] of Object.entries(JJK_ROSTER)) {
+      if (normName.includes(key) || key.includes(normName)) {
         found = conf;
         break;
       }
     }
   }
 
-  // 3. Agent baru: gender dari nama, avatar dipilih deterministik (tidak pakai avatar khusus bos/Arga/Bima)
+  // 3. Jika belum ditemukan (agen kustom yang baru direkrut), pilihkan karakter acak JJK
   if (!found) {
-    const gender = guessGender(normName || normId);
-    const pool = gender === "f"
-      ? ["Business_Female_01", "Business_Female_02", "Business_Female_03", "Business_Female_04", "Female_Adult_01", "Female_Adult_02"]
-      : ["Business_Male_02", "Business_Male_04", "Business_Male_06", "Business_Male_07", "Male_Adult_01", "Male_Adult_02", "Male_Adult_03"];
-
     let hash = 0;
     const str = normName || normId || "agent";
     for (let i = 0; i < str.length; i++) {
       hash = (hash << 5) - hash + str.charCodeAt(i);
       hash |= 0;
     }
-    const avatarName = pool[Math.abs(hash) % pool.length];
-    found = { avatarName, gender };
+    const idx = Math.abs(hash) % RECRUITABLE_JJK_CHARACTERS.length;
+    const charName = RECRUITABLE_JJK_CHARACTERS[idx];
+    found = JJK_ROSTER[charName.toLowerCase()] || {
+      avatarName: "Business_Male_02",
+      gender: "m",
+      characterName: charName,
+      roleTitle: "Staff",
+      division: "Operasional & Admin",
+    };
   }
 
   return {
