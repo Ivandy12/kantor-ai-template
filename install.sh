@@ -93,7 +93,7 @@ restart_svc() { # matikan proses lama lalu TUNGGU sampai benar-benar mati (s6/ka
 wait_health() { # tunggu Paperclip sehat & stabil (3x berturut-turut sehat), maksimal ~3 menit
   local i okc=0
   for i in $(seq 1 90); do
-    if curl -sf -m 3 -o /dev/null http://127.0.0.1:3101/api/health; then okc=$((okc+1)); [ $okc -ge 3 ] && return 0
+    if curl -sf -m 3 -o /dev/null http://127.0.0.1:3201/api/health; then okc=$((okc+1)); [ $okc -ge 3 ] && return 0
     else okc=0; fi
     sleep 2
   done

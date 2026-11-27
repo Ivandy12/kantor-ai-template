@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 /*
  * Pintu depan port 3100 (satu-satunya port yang dibuka Sumopod).
  *   /kantor3d/...            -> Kantor 3D (Hermes3D, basePath /kantor3d)
@@ -14,9 +14,9 @@ const inject = require("./html-inject");
 const ui = require("./ui-serve");
 const modelAi = require("./model-ai");
 
-const LISTEN_PORT = parseInt(process.env.PROXY_PORT || "3100", 10);
-const PAPERCLIP = process.env.PAPERCLIP_TARGET || "http://127.0.0.1:3101";
-const KANTOR3D = process.env.KANTOR3D_TARGET || "http://127.0.0.1:3300";
+const LISTEN_PORT = parseInt(process.env.PROXY_PORT || "3200", 10);
+const PAPERCLIP = process.env.PAPERCLIP_TARGET || "http://127.0.0.1:3201";
+const KANTOR3D = process.env.KANTOR3D_TARGET || "http://127.0.0.1:3400";
 const BASE = "/kantor3d";
 
 const proxy = httpProxy.createProxyServer({ xfwd: false, ws: true, proxyTimeout: 0, timeout: 0 });

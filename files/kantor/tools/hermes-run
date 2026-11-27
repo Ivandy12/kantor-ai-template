@@ -1,11 +1,11 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Claude token-per-run (31 Okt 2026): Hermes baru menjalankan sesi lewat gateway, jadi env secret dari Paperclip
 # nggak sampai ke terminal agent. Wrapper ini menaruh token run di file 600 selama run; `pc` membacanya lewat PAPERCLIP_RUN_ID.
 # v1.3.1: kalau Hermes berhenti karena batas langkah (max turns), tulis penanda <run>.stop supaya adapter
 # melapor "max_turns_exhausted" -> Paperclip melanjutkan otomatis, bukan bikin issue blocked.
 DIR=/opt/data/kantor/run-tokens
 HERMES=/opt/hermes/.venv/bin/hermes
-export PAPERCLIP_API_URL=http://127.0.0.1:3101
+export PAPERCLIP_API_URL=http://127.0.0.1:3201
 umask 077
 mkdir -p "$DIR"
 find "$DIR" -type f \( -name '*.token' -o -name '*.stop' \) -mmin +2880 -delete 2>/dev/null

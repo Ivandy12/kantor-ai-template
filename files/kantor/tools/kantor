@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """kantor — perintah owner untuk Kantor AI (dipakai Arga di Telegram).
 
   kantor tim                                   daftar agent (nama | jabatan | status)
@@ -20,7 +20,7 @@ try:
             cfg[k] = v.strip().strip('"').strip("'")
 except OSError:
     pass
-API = 'http://127.0.0.1:3101/api'
+API = 'http://127.0.0.1:3201/api'
 C = cfg.get('COMPANY_ID', '')
 try:
     KEY = open('/opt/data/kantor/.board.key').read().strip()

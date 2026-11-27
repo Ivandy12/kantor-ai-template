@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """pc — simple Paperclip helper for Kantor AI agents.
 
 Uses $PAPERCLIP_API_URL, $PAPERCLIP_API_KEY, $PAPERCLIP_RUN_ID (provided automatically in every run).
@@ -23,10 +23,10 @@ Commands:
 """
 import json, os, re, random, sys, uuid, urllib.request, urllib.error, mimetypes, argparse
 
-API = os.environ.get('PAPERCLIP_API_URL', 'http://127.0.0.1:3101').rstrip('/')
+API = os.environ.get('PAPERCLIP_API_URL', 'http://127.0.0.1:3201').rstrip('/')
 # Fallback to local port if URL has unresolvable external domain
 if not any(h in API for h in ("127.0.0.1", "localhost")):
-    API = 'http://127.0.0.1:3101'
+    API = 'http://127.0.0.1:3201'
 if not API.endswith('/api'):
     API += '/api'
 KEY = os.environ.get('PAPERCLIP_API_KEY', '')
@@ -186,7 +186,7 @@ def main():
         env = {'HOME': {'type': 'plain', 'value': '/opt/data'},
                'HERMES_HOME': {'type': 'plain', 'value': '/opt/data/profiles/kantorstaff'},
                'TERMINAL_CWD': {'type': 'plain', 'value': cwd},
-               'PAPERCLIP_API_URL': {'type': 'plain', 'value': 'http://127.0.0.1:3100'}}
+               'PAPERCLIP_API_URL': {'type': 'plain', 'value': 'http://127.0.0.1:3201'}}
         palettes = ['bubblegum-sky', 'pink-lemonade', 'orchid-peach', 'coral-mint', 'arctic-blue', 'solar-flare', 'violet-ember',
                     'deep-tide', 'golden-hour', 'tangerine-cobalt', 'electric-grove', 'flamingo-jade', 'turquoise-cherry', 'ultraviolet-tide']
         # model ikut menu "Model AI" kalau sudah diterapkan, kalau belum pakai 9Router
@@ -205,7 +205,7 @@ def main():
                               'toolsets': 'terminal,file,web,skills,todo', 'maxTurnsPerRun': 45, 'timeoutSec': 1800,
                               'persistSession': True, 'quiet': True, 'cwd': cwd,
                               'hermesCommand': '/opt/data/kantor/tools/hermes-run',
-                              'paperclipApiUrl': 'http://127.0.0.1:3100', 'env': env},
+                              'paperclipApiUrl': 'http://127.0.0.1:3201', 'env': env},
             'runtimeConfig': {'heartbeat': {'enabled': False, 'maxConcurrentRuns': 5, 'maxTurnContinuation': {'enabled': True, 'maxAttempts': 3, 'delayMs': 5000}}},
             'instructionsBundle': {'entryFile': 'AGENTS.md', 'files': {'AGENTS.md': instr}},
             'desiredSkills': ['paperclip'],
